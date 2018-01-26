@@ -2,6 +2,7 @@ package resource;
 
 import data.User;
 import data.Users;
+import org.glassfish.jersey.server.Uri;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
@@ -21,11 +22,11 @@ public class UserResource {
 
     @GET @Path("/users")
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    public Response getUsers(@DefaultValue("1") @QueryParam("page") int page, @DefaultValue("" + Users.MAX_USERS) @QueryParam("pageSize") int pageSize) {
-        Link prev = getLinkPrevious(page, pageSize);
-        Link next = getLinkNext(page, pageSize);
+    public Response getUsers(@DefaultValue("1") @QueryParam("page") int page, @DefaultValue("" + Users.MAX_USERS) @QueryParam("pageSize") int pageSize, @Context UriInfo uriInfo) {
+        Link prev = getLinkPrevious(page, pageSize, uriInfo);
+        Link next = getLinkNext(page, pageSize, uriInfo);
 
-        Users users = getUsersWithSelf(page, pageSize);
+        Users users = getUsersWithSelf(page, pageSize, uriInfo);
 
         return Response.ok(users)
                 .links(prev)
@@ -33,15 +34,15 @@ public class UserResource {
                 .build();
     }
 
-    private Users getUsersWithSelf(int page, int pageSize) {
+    private Users getUsersWithSelf(int page, int pageSize, UriInfo uriInfo) {
         Users users = USERS.getUsers(page, pageSize);
         for(User user: users.getUsers())
-            setUserSelf(user);
+            setUserSelf(user, uriInfo);
 
         return users;
     }
 
-    private Link getLinkPrevious(int page, int pageSize) {
+    private Link getLinkPrevious(int page, int pageSize, UriInfo uriInfo) {
         return Link.fromUri(uriInfo.getAbsolutePath())
                 .param("page", ""+(page-1))
                 .param("pageSize", ""+pageSize)
@@ -50,7 +51,7 @@ public class UserResource {
                 .build();
     }
 
-    private Link getLinkNext(int page, int pageSize) {
+    private Link getLinkNext(int page, int pageSize, UriInfo uriInfo) {
         return Link.fromUri(uriInfo.getAbsolutePath())
                 .param("page", ""+(page+1))
                 .param("pageSize", ""+pageSize)
@@ -59,9 +60,9 @@ public class UserResource {
                 .build();
     }
 
-    private void setUserSelf(User user) {
+    private void setUserSelf(User user, UriInfo uriInfo) {
         user.setSelf(Link
-                .fromUri(uriInfo.getAbsolutePath().resolve(user.getId()))
+                .fromUri(uriInfo.getAbsolutePathBuilder().path(user.getId()).build())
                 .rel("self")
                 .type("GET")
                 .build());
