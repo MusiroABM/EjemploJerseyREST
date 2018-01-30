@@ -7,7 +7,9 @@ import org.junit.Test;
 
 import javax.ws.rs.core.Application;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.hamcrest.core.Is.*;
+import static org.junit.Assert.*;
+
 
 public class UserResourceTest extends JerseyTest {
     @Override
@@ -24,5 +26,6 @@ public class UserResourceTest extends JerseyTest {
                 .get(User.class);
 
         assertEquals(oscar, retrieved);
+        assertThat(oscar, is(retrieved));
     }
 }
