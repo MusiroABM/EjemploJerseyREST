@@ -13,6 +13,15 @@ public class UserResource {
     @Context
     private UriInfo uriInfo;
 
+    @GET @Path("/users/oscar")
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    public Response getOscar(@Context UriInfo uriInfo) {
+        User user = new User("Óscar", "Belmonte", "123");
+        setUserSelf(user, uriInfo);
+
+        return Response.ok(user).build();
+    }
+
     @GET @Path("/users/{id}")
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public Response getUser(@PathParam("id") String id) {
